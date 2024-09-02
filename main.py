@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 from discord.ext import tasks, commands
 
-DEBUG_MODE = True
+DEBUG_MODE = False
 
 class Game(StrEnum):
     BALATRO = auto()
