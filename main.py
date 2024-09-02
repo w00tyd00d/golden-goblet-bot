@@ -1,29 +1,25 @@
 import datetime
-import importlib.util
 import discord
 import importlib
 import json
 import os
 
-from dotenv import load_dotenv
 from pathlib import Path
 from discord.ext import tasks, commands
 
-DEBUG_MODE = False
+class Struct:
+    def __init__(self, data):
+        self.__dict__.update(data)
 
-# Discord Data
-load_dotenv()
-
-debug_channel_id = 1279823725495062589
-default_channel_id = 890271922301071451
+with open(os.path.join(os.path.dirname(__file__), "settings.json")) as f:
+    settings = Struct(json.loads(f.read()))
 
 channel = None  # assigned at on_ready
-
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 # Serialized data
-save_file = os.path.join(os.path.dirname(__file__), "data\\main.json")
+save_file = os.path.join(os.path.dirname(__file__), "data/main.json")
 
 game = ""
 week = 0
@@ -42,7 +38,7 @@ def save_data():
         f.write(json.dumps(data))
 
     if game:
-        module = importlib.import_module(game)
+        module = get_module(game)
         module.save_data()
 
 
@@ -63,13 +59,17 @@ def load_data():
     scores = {int(k):v for k,v in data["scores"].items()}
 
     if game:
-        module = importlib.import_module(game)
+        module = get_module(game)
         module.load_data()
 
 
 def module_exists(module_name: str):
-    spec = importlib.util.find_spec(module_name)
+    spec = importlib.util.find_spec(f'games.{module_name}')
     return spec is not None
+
+
+def get_module(module_name: str):
+   return importlib.import_module(f'games.{module_name}')
 
 
 def get_member(id: int) -> discord.Member:
@@ -102,7 +102,6 @@ def get_winners() -> list:
             points[pts] = []
         points[pts].append(pid)
 
-    print("Points is : ", points[max(points)])
     return points[max(points)]
 
 
@@ -118,10 +117,10 @@ async def on_ready():
     print(f'{bot.user} has connected to Discord!')
     
     global channel
-    channel_id = debug_channel_id if DEBUG_MODE else default_channel_id
+    channel_id = settings.debug_channel_id if settings.debug_mode else settings.default_channel_id
     channel = bot.get_channel(channel_id)
 
-    if DEBUG_MODE:
+    if settings.debug_mode:
         await send_message("Logged in!")
     
     load_data()
@@ -229,7 +228,7 @@ async def new_goblet_day():
         await send_message("No event currently running!")
     
     week += 1
-    module = importlib.import_module(game)
+    module = get_module(game)
     
     string, embed = module.get_new_challenge(week)
     await send_message(string, embed)
@@ -239,4 +238,5 @@ async def new_goblet_day():
 
 
 if __name__ == "__main__":
-    bot.run(os.getenv("DISCORD_TOKEN"))
+    # bot.run(os.getenv("DISCORD_TOKEN"))
+    bot.run(settings.discord_token)
