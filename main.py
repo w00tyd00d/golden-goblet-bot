@@ -52,6 +52,7 @@ def save_data():
 def load_data():
     if not Path(save_file):
         print(f"Invalid file path: {save_file}")
+        return
         
     with open(save_file) as f:
         f_data = f.read()
