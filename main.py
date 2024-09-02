@@ -18,7 +18,7 @@ class Game(StrEnum):
 load_dotenv()
 
 debug_channel_id = 1279823725495062589
-default_channel_id = 1167806493991645195
+default_channel_id = 890271922301071451
 
 channel = None  # assigned at on_ready
 
