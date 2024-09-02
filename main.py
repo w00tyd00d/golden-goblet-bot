@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 from discord.ext import tasks, commands
 
-DEBUG_MODE = True
+DEBUG_MODE = False
 
 class Game(StrEnum):
     BALATRO = auto()
@@ -143,9 +143,12 @@ async def debug_post(ctx):
 async def end(ctx):
     global game, week, time, scores
     
-    wid = max(scores, key=scores.get)
-    winner = get_member(wid).mention
-    await send_message(f"Well done everyone who participated in the Golden Goblet!\n\nThe winner of the Golden Goblet is...{winner}!", get_scores(ctx))
+    if scores:
+        wid = max(scores, key=scores.get)
+        winner = get_member(wid).mention
+        await send_message(f"Well done to everyone who participated!\n\nThe winner of the Golden Goblet is...{winner}!", get_scores(ctx))
+    elif game:
+        await send_message(f"Golden Goblet has concluded.")
 
     game = ""
     week = 0
