@@ -72,18 +72,33 @@ def get_member(id: int) -> discord.Member:
     return channel.guild.get_member(int(id))
 
 
-async def send_message(message: str):
+def get_scores(ctx) -> discord.Embed:
+    embed = discord.Embed(
+        title=f"{game.capitalize()}: Golden Goblet",
+        description=f"Week {week}\n\u200B",
+        color=discord.Color.blue()
+    )
+
+    names = []
+    points = []
+    for id, pts in scores.items():
+        names.append(get_member(id).display_name)
+        points.append(str(pts))
+
+    name_list = "\n".join(names)
+    point_list = "\n".join(points)
+
+    embed.add_field(name="Players", value=name_list)
+    embed.add_field(name="Scores", value=point_list)
+
+    return embed
+
+
+async def send_message(message: str, embed: discord.Embed = None):
     if not channel:
         print("Unknown channel ID!")
         
-    await channel.send(message)
-
-
-async def send_embed(embed: discord.Embed):
-    if not channel:
-        print("Unknown channel ID!")
-    
-    await channel.send(embed=embed)
+    await channel.send(message, embed=embed)
 
 
 @bot.event
@@ -124,6 +139,21 @@ async def debug_post(ctx):
     await new_goblet_day()
 
 
+@bot.command(name="end")
+async def end(ctx):
+    global game, week, time, scores
+    
+    wid = max(scores, key=scores.get)
+    winner = get_member(wid).mention
+    await send_message(f"Well done everyone who participated in the Golden Goblet!\n\nThe winner of the Golden Goblet is...{winner}!", get_scores(ctx))
+
+    game = ""
+    week = 0
+    time = datetime.datetime.now().timestamp
+    scores = {}
+    save_data()
+
+
 @bot.command(name="new")
 async def new_goblet(ctx, game_name: str):
     if not hasattr(Game, game_name.upper()):
@@ -149,27 +179,9 @@ async def add_to_score(ctx, user: discord.Member):
 
 
 @bot.command(name="scores")
-async def get_scores(ctx):
-    embed = discord.Embed(
-        title=f"{game.capitalize()}: Golden Goblet",
-        description=f"Week {week}\n\u200B",
-        color=discord.Color.blue()
-    )
+async def show_scores(ctx):
+    await send_message("", get_scores())
 
-    names = []
-    points = []
-    for id, pts in scores.items():
-        names.append(get_member(id).display_name)
-        points.append(str(pts))
-
-    name_list = "\n".join(names)
-    point_list = "\n".join(points)
-
-    embed.add_field(name="Players", value=name_list)
-    embed.add_field(name="Scores", value=point_list)
-
-    await send_embed(embed)
-    
 
 @tasks.loop(minutes=15)
 async def check_time():
@@ -188,7 +200,7 @@ async def new_goblet_day():
     match game:
         case Game.BALATRO:
             module.randomize_setup()
-            await send_embed(module.create_embed(week))
+            await send_message("", module.create_embed(week))
         case _:
             await send_message("Invalid Golden Goblet game!")
             week -= 1
@@ -196,7 +208,7 @@ async def new_goblet_day():
         
     time = (datetime.datetime.now() + datetime.timedelta(days=7)).timestamp()
     save_data()
-        
+
 
 if __name__ == "__main__":
     bot.run(os.getenv("DISCORD_TOKEN"))
