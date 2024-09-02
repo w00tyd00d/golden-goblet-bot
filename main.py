@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 from discord.ext import tasks, commands
 
-DEBUG_MODE = True
+DEBUG_MODE = False
 
 # Discord Data
 load_dotenv()
@@ -95,6 +95,17 @@ def get_scores() -> discord.Embed:
     return embed
 
 
+def get_winners() -> list:
+    points = {}
+    for pid, pts in scores.items():
+        if pts not in points:
+            points[pts] = []
+        points[pts].append(pid)
+
+    print("Points is : ", points[max(points)])
+    return points[max(points)]
+
+
 async def send_message(message: str, embed: discord.Embed = None):
     if not channel:
         print("Unknown channel ID!")
@@ -147,11 +158,21 @@ async def end(ctx):
     if not game:
         await send_message("No event currently running!")
         return
-    
+
     if scores:
-        wid = max(scores, key=scores.get)
-        winner = get_member(wid).mention
-        await send_message(f"Well done to everyone who participated!\n\nThe winner of the Golden Goblet is...{winner}!", get_scores())
+        final_string = "Well done to everyone who participated!\n\n"
+        winners = [get_member(wid).mention for wid in get_winners()]
+        
+        match len(winners):
+            case 1: final_string += f"The winner of the Golden Goblet is...{winners[0]}!"
+            case 2: final_string += f"The winner of the Golden Goblet is...\na tie between {winners[0]} and {winners[1]}!"
+            case _:
+                final_string += f"The winner of the Golden Goblet is...\na tie between "
+                for i in range(len(winners)-1):
+                    final_string += f"{winners[i]}, "
+                final_string += f"and {winners[-1]}!"
+
+        await send_message(final_string, get_scores())
     else:
         await send_message("Golden Goblet has concluded.")
 
