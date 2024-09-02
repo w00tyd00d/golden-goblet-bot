@@ -50,21 +50,23 @@ def save_data():
 
 
 def load_data():
-    if Path(save_file):
-        with open(save_file) as f:
-            f_data = f.read()
-            if f_data == "": return
-            data = json.loads(f_data)
+    if not Path(save_file):
+        print(f"Invalid file path: {save_file}")
+        
+    with open(save_file) as f:
+        f_data = f.read()
+        if f_data == "": return
+        data = json.loads(f_data)
 
-        global game, week, time, scores
-        game = data["game"]
-        week = data["week"]
-        time = data["time"]
-        scores = {int(k):v for k,v in data["scores"].items()}
+    global game, week, time, scores
+    game = data["game"]
+    week = data["week"]
+    time = data["time"]
+    scores = {int(k):v for k,v in data["scores"].items()}
 
-        if game:
-            module = importlib.import_module(game)
-            module.load_data()
+    if game:
+        module = importlib.import_module(game)
+        module.load_data()
 
 
 def get_member(id: int) -> discord.Member:
