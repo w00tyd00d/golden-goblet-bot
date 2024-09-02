@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 from discord.ext import tasks, commands
 
-DEBUG_MODE = False
+DEBUG_MODE = True
 
 class Game(StrEnum):
     BALATRO = auto()
@@ -68,7 +68,6 @@ def load_data():
 
 
 def get_member(id: int) -> discord.Member:
-    # return discord.Client.get_user(id)
     return channel.guild.get_member(int(id))
 
 
@@ -85,11 +84,8 @@ def get_scores(ctx) -> discord.Embed:
         names.append(get_member(id).display_name)
         points.append(str(pts))
 
-    name_list = "\n".join(names)
-    point_list = "\n".join(points)
-
-    embed.add_field(name="Players", value=name_list)
-    embed.add_field(name="Scores", value=point_list)
+    embed.add_field(name="Players", value="\n".join(names))
+    embed.add_field(name="Scores", value="\n".join(points))
 
     return embed
 
@@ -162,7 +158,7 @@ async def new_goblet(ctx, game_name: str):
     if not hasattr(Game, game_name.upper()):
         send_message("Invalid game name!")
 
-    global game, week, time, scores
+    global game, week, scores
     game = getattr(Game, game_name.upper())
     week = 0
     scores = {}
@@ -181,9 +177,12 @@ async def add_to_score(ctx, user: discord.Member):
     save_data()
 
 
-@bot.command(name="scores")
+@bot.command(aliases=["scores", "score"])
 async def show_scores(ctx):
-    await send_message("", get_scores())
+    if not game:
+        await send_message("No active Golden Goblets!")
+        return
+    await send_message("", get_scores(ctx))
 
 
 @tasks.loop(minutes=15)
