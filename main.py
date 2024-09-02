@@ -1,18 +1,15 @@
 import datetime
+import importlib.util
 import discord
 import importlib
 import json
 import os
 
-from enum import StrEnum, auto
 from dotenv import load_dotenv
 from pathlib import Path
 from discord.ext import tasks, commands
 
 DEBUG_MODE = False
-
-class Game(StrEnum):
-    BALATRO = auto()
 
 # Discord Data
 load_dotenv()
@@ -68,6 +65,11 @@ def load_data():
     if game:
         module = importlib.import_module(game)
         module.load_data()
+
+
+def module_exists(module_name: str):
+    spec = importlib.util.find_spec(module_name)
+    return spec is not None
 
 
 def get_member(id: int) -> discord.Member:
@@ -163,11 +165,12 @@ async def end(ctx):
 
 @bot.command(name="new")
 async def new_goblet(ctx, game_name: str):
-    if not hasattr(Game, game_name.upper()):
+    if not module_exists(game_name.lower()):
         await send_message("Invalid game name!")
+        return
 
     global game, week, scores
-    game = getattr(Game, game_name.upper())
+    game = game_name.lower()
     week = 0
     scores = {}
     
