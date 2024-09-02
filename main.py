@@ -142,24 +142,29 @@ async def debug_post(ctx):
 async def end(ctx):
     global game, week, time, scores
     
+    if not game:
+        await send_message("No event currently running!")
+        return
+    
     if scores:
         wid = max(scores, key=scores.get)
         winner = get_member(wid).mention
         await send_message(f"Well done to everyone who participated!\n\nThe winner of the Golden Goblet is...{winner}!", get_scores(ctx))
-    elif game:
-        await send_message(f"Golden Goblet has concluded.")
+    else:
+        await send_message("Golden Goblet has concluded.")
 
     game = ""
     week = 0
-    time = datetime.datetime.now().timestamp
+    time = datetime.datetime.now().timestamp()
     scores = {}
+
     save_data()
 
 
 @bot.command(name="new")
 async def new_goblet(ctx, game_name: str):
     if not hasattr(Game, game_name.upper()):
-        send_message("Invalid game name!")
+        await send_message("Invalid game name!")
 
     global game, week, scores
     game = getattr(Game, game_name.upper())
@@ -183,7 +188,7 @@ async def add_to_score(ctx, user: discord.Member):
 @bot.command(aliases=["scores", "score"])
 async def show_scores(ctx):
     if not game:
-        await send_message("No active Golden Goblets!")
+        await send_message("No event currently running!")
         return
     await send_message("", get_scores(ctx))
 
@@ -197,20 +202,14 @@ async def check_time():
 async def new_goblet_day():
     global game, week, time
     if not game:
-        await send_message("No active Golden Goblets!")
+        await send_message("No event currently running!")
     
     week += 1
     module = importlib.import_module(game)
     
-    match game:
-        case Game.BALATRO:
-            module.randomize_setup()
-            await send_message("", module.create_embed(week))
-        case _:
-            await send_message("Invalid Golden Goblet game!")
-            week -= 1
-            return
-        
+    string, embed = module.get_new_challenge(week)
+    await send_message(string, embed)
+    
     time = (datetime.datetime.now() + datetime.timedelta(days=7)).timestamp()
     save_data()
 

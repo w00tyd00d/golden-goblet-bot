@@ -50,11 +50,16 @@ def load_data():
         seed = data["seed"]
 
 
-def create_new_seed() -> str:
+def get_new_challenge(week: int) -> tuple[str, discord.Embed | None]:
+    _randomize_setup()
+    return "", _create_embed(week)
+
+
+def _create_new_seed() -> str:
     return "".join([random.choice(seed_chars) for _ in range(8)])
 
 
-def create_embed(week: int) -> discord.Embed:
+def _create_embed(week: int) -> discord.Embed:
     embed = discord.Embed(
         title="Balatro: Golden Goblet",
         description=f"Week {week}\n\u200B",
@@ -68,9 +73,9 @@ def create_embed(week: int) -> discord.Embed:
     return embed
 
 
-def randomize_setup():
+def _randomize_setup():
     global deck, seed
-    seed = create_new_seed()
+    seed = _create_new_seed()
 
     new_deck = deck
     while new_deck == deck:
