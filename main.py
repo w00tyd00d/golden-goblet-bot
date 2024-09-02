@@ -216,7 +216,7 @@ async def show_scores(ctx):
     await send_message("", get_scores())
 
 
-@tasks.loop(minutes=15)
+@tasks.loop(minutes=settings.check_time_interval)
 async def check_time():
     if game and datetime.datetime.now().timestamp() > time:
         await new_goblet_day()
@@ -238,5 +238,4 @@ async def new_goblet_day():
 
 
 if __name__ == "__main__":
-    # bot.run(os.getenv("DISCORD_TOKEN"))
     bot.run(settings.discord_token)
