@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 from discord.ext import tasks, commands
 
-DEBUG_MODE = False
+DEBUG_MODE = True
 
 # Discord Data
 load_dotenv()
@@ -76,7 +76,7 @@ def get_member(id: int) -> discord.Member:
     return channel.guild.get_member(int(id))
 
 
-def get_scores(ctx) -> discord.Embed:
+def get_scores() -> discord.Embed:
     embed = discord.Embed(
         title=f"{game.capitalize()}: Golden Goblet",
         description=f"Week {week}\n\u200B",
@@ -85,7 +85,7 @@ def get_scores(ctx) -> discord.Embed:
 
     names = []
     points = []
-    for id, pts in scores.items():
+    for id, pts in sorted(list(scores.items()), key=lambda x: x[1], reverse=True):
         names.append(get_member(id).display_name)
         points.append(str(pts))
 
@@ -151,7 +151,7 @@ async def end(ctx):
     if scores:
         wid = max(scores, key=scores.get)
         winner = get_member(wid).mention
-        await send_message(f"Well done to everyone who participated!\n\nThe winner of the Golden Goblet is...{winner}!", get_scores(ctx))
+        await send_message(f"Well done to everyone who participated!\n\nThe winner of the Golden Goblet is...{winner}!", get_scores())
     else:
         await send_message("Golden Goblet has concluded.")
 
@@ -193,7 +193,7 @@ async def show_scores(ctx):
     if not game:
         await send_message("No event currently running!")
         return
-    await send_message("", get_scores(ctx))
+    await send_message("", get_scores())
 
 
 @tasks.loop(minutes=15)
