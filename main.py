@@ -162,14 +162,15 @@ async def end(ctx):
         final_string = "Well done to everyone who participated!\n\n"
         winners = [get_member(wid).mention for wid in get_winners()]
         
-        match len(winners):
-            case 1: final_string += f"The winner of the Golden Goblet is...{winners[0]}!"
-            case 2: final_string += f"The winner of the Golden Goblet is...\na tie between {winners[0]} and {winners[1]}!"
-            case _:
-                final_string += f"The winner of the Golden Goblet is...\na tie between "
-                for i in range(len(winners)-1):
-                    final_string += f"{winners[i]}, "
-                final_string += f"and {winners[-1]}!"
+        if len(winners) == 1:
+            final_string += f"The winner of the Golden Goblet is...{winners[0]}!"
+        elif len(winners) == 2:
+            final_string += f"The winner of the Golden Goblet is...\na tie between {winners[0]} and {winners[1]}!"
+        else:
+            final_string += f"The winner of the Golden Goblet is...\na tie between "
+            for i in range(len(winners)-1):
+                final_string += f"{winners[i]}, "
+            final_string += f"and {winners[-1]}!"
 
         await send_message(final_string, get_scores())
     else:
