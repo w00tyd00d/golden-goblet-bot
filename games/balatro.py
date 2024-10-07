@@ -50,7 +50,7 @@ def load_data():
         seed = data["seed"]
 
 
-def get_new_challenge(week: int) -> tuple[str, discord.Embed | None]:
+def get_new_challenge(week: int) -> tuple[str, discord.Embed]:
     _randomize_setup()
     return "", _create_embed(week)
 

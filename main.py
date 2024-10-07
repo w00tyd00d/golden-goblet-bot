@@ -231,6 +231,7 @@ async def new_goblet_day():
     module = get_module(game)
     
     string, embed = module.get_new_challenge(week)
+    string = channel.guild.get_role(1290139671657054220).mention
     await send_message(string, embed)
     
     time = (datetime.datetime.now() + datetime.timedelta(days=7)).timestamp()
