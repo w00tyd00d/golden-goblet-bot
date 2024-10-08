@@ -19,7 +19,7 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 # Serialized data
-save_file = os.path.join(os.path.dirname(__file__), "data/main.json")
+save_file = os.path.abspath(os.path.join(os.path.dirname(__file__), "data/main.json"))
 
 game = ""
 week = 0

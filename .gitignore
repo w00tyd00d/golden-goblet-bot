@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+*.code-workspace
+/.venv*
+/.env
+/TESTENV.py
+/settings.json
+*.json
