@@ -1,7 +1,7 @@
 import os, json, random, discord
 from pathlib import Path
 
-save_file = os.path.join(os.path.dirname(__file__), "data/balatro.json")
+save_file = os.path.abspath(os.path.join(os.path.dirname(__file__), "../data/balatro.json"))
 
 deck_images = {
     "Red":          "https://static.wikia.nocookie.net/balatrogame/images/2/24/Red_Deck.png",
@@ -50,7 +50,7 @@ def load_data():
         seed = data["seed"]
 
 
-def get_new_challenge(week: int) -> tuple[str, discord.Embed]:
+def get_new_challenge(week: int) -> tuple:
     _randomize_setup()
     return "", _create_embed(week)
 
